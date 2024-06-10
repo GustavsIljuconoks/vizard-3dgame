@@ -1,23 +1,36 @@
 ﻿import viz
 import vizact
+import vizcam
 
-viz.go()
+# Set basic settings
+viz.go() # viz.FULLSCREEN
+viz.MainView.setPosition(0, 5, 2)
+viz.MainView.setEuler(0, 135, 180)
+viz.setMultiSample(4)
+viz.fov(60)
+viz.mouse(viz.OFF)
 
-customObject = viz.add('resources/chessgame.gltf')
-customObject.setPosition([0, 0, 5])
+gameScene = viz.add('resources/chessgame.gltf')
+# WASD movment
+# tracker = vizcam.addWalkNavigate(moveScale=10.0)
+# tracker.setPosition([0, 2, 1.5])
+# viz.link(tracker,viz.MainView)
+# viz.mouse.setVisible(False)
 
-dir_light = viz.addDirectionalLight()
-dir_light.direction(0, -1, 0)
-dir_light.intensity(0.8)
+soccerball = viz.addChild('soccerball.osgb')
+soccerball.setPosition([-0.5, 4, -1])
 
-head_light = viz.MainView.getHeadLight()
-head_light.intensity(0.5)
+picked_object = None
+def onPick():
+    global picked_object
+    picked_object = viz.pick()
+    if picked_object == gameScene:
+        picked_object = None  # Do not allow picking of gameScene
 
-point_lights = []
-light_positions = [(-10, 5, -10), (-10, 5, 10), (10, 5, -10), (10, 5, 10)]
+def mymouse(e):
+    global picked_object
+    if picked_object:
+        picked_object.setPosition([(e.x - 0.5) * 6, e.y * 4, 5])
 
-for pos in light_positions:
-    point_light = viz.addPointLight()
-    point_light.setPosition(pos[0], pos[1], pos[2])
-    point_light.intensity(0.6)
-    point_lights.append(point_light)
+vizact.onmousedown(viz.MOUSEBUTTON_LEFT, onPick)
+viz.callback(viz.MOUSE_MOVE_EVENT, mymouse)
